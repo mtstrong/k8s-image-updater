@@ -1,0 +1,201 @@
+"""
+K8s Image Updater Agent - Quick Start Guide
+============================================
+
+WHAT THIS DOES:
+- Scans your Kubernetes cluster for container deployments
+- Checks DockerHub and other registries for image updates
+- 🤖 Uses AI (OpenAI GPT) to analyze changelogs for breaking changes
+- 📊 Predicts deployment risk (0-10 score) with AI + heuristics
+- Updates your YAML manifest files
+- Creates a GitHub Pull Request with AI-powered insights
+- Runs automatically every week
+
+PREREQUISITES:
+✓ Kubernetes cluster with kubectl access
+✓ GitHub repository with your K8s manifests
+✓ GitHub Personal Access Token (with 'repo' permissions)
+✓ OpenAI API key (optional but recommended - ~$0.50/year)
+✓ Python 3.9+ (for local testing)
+
+QUICK START (5 minutes):
+========================
+
+1. CONFIGURE
+   
+   Edit config.yaml:
+   - Set your GitHub username/repo
+   - Set paths to your manifest files
+   
+   $ vim config.yaml
+
+2. SET API KEYS
+   
+   # GitHub token (required)
+   $ export GITHUB_TOKEN="ghp_your_token_here"
+   
+   Get token at: https://github.com/settings/tokens
+   Required permission: repo (full)
+   
+   # OpenAI API key (optional but recommended for AI features)
+   $ export OPENAI_API_KEY="sk-proj-your_key_here"
+   
+   Get key at: https://platform.openai.com/api-keys
+   Cost: ~$0.50/year with gpt-4o-mini model
+
+3. TEST LOCALLY (DRY RUN)
+   
+   $ ./setup.sh
+   $ source venv/bin/activate
+   $ python main.py --dry-run --verbose
+   
+   This shows what WOULD be updated without making changes.
+
+4. DEPLOY TO KUBERNETES
+   
+   Update the GitHub token in kubernetes/cronjob.yaml:
+   
+   $ vim kubernetes/cronjob.yaml
+   # Find: YOUR_GITHUB_TOKEN_HERE
+   # Replace with your actual token
+   
+   Deploy:
+   $ kubectl apply -f kubernetes/cronjob.yaml
+   
+   Verify:
+   $ kubectl get cronjob -n image-updater
+
+5. MANUAL TEST
+   
+   Don't wait for the schedule - test now:
+   
+   $ ./run-manual.sh
+   
+   This creates a job and streams the logs.
+
+6. CHECK THE PR
+   
+   Go to your GitHub repository and check for a new PR!
+   It will look like:
+   
+   🤖 Weekly Container Image Updates - 2026-02-05 (X updates)
+
+COMMON COMMANDS:
+================
+
+# See scheduled runs
+$ kubectl get cronjobs -n image-updater
+
+# View job history
+$ kubectl get jobs -n image-updater
+
+# Get logs from latest job
+$ JOB=$(kubectl get jobs -n image-updater --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}')
+$ kubectl logs -n image-updater job/$JOB
+
+# Delete old jobs
+$ kubectl delete jobs -n image-updater --field-selector status.successful=1
+
+# Trigger manual run
+$ ./run-manual.sh
+
+# Local dry-run test
+$ python main.py --dry-run
+
+CUSTOMIZATION:
+==============
+
+Update Policy (config.yaml):
+  allow_major: false   # Be conservative with major updates
+  allow_minor: true    # Allow minor updates (1.1 → 1.2)
+  allow_patch: true    # Allow patch updates (1.1.1 → 1.1.2)
+
+Schedule (kubernetes/cronjob.yaml):
+  schedule: "0 9 * * 1"  # Every Monday at 9 AM UTC
+  
+  Other examples:
+  - "0 2 * * *"      # Every day at 2 AM
+  - "0 0 * * 0"      # Every Sunday at midnight
+  - "0 15 */3 * *"   # Every 3 days at 3 PM
+
+WORKFLOW:
+=========
+
+Week 1:
+  1. Monday 9 AM: CronJob runs automatically
+  2. Agent scans your cluster
+  3. Finds 5 updates available
+  4. Creates PR with changes
+  5. You review the PR
+  6. You merge the PR
+  7. Apply changes: kubectl apply -f ...
+
+Week 2:
+  1. Monday 9 AM: CronJob runs again
+  2. No updates found (everything current)
+  3. No PR created
+  4. Nothing to do! ✓
+
+Week 3:
+  1. Monday 9 AM: CronJob runs
+  2. Found 2 new updates
+  3. Creates new PR
+  4. Repeat...
+
+TROUBLESHOOTING:
+================
+
+Problem: "No deployments found"
+Solution: Check namespaces in config.yaml
+  Set namespaces: [] for all namespaces
+  Or list specific ones: ["sonarr", "radarr"]
+
+Problem: "GitHub token not configured"
+Solution: 
+  $ export GITHUB_TOKEN="ghp_..."
+  OR edit config.yaml and add token
+
+Problem: "Could not find manifest file"
+Solution: Check manifest_paths in config.yaml
+  Must be absolute paths or relative to repo root
+
+Problem: Job fails in Kubernetes
+Solution: Check logs:
+  $ kubectl logs -n image-updater job/[job-name]
+
+SECURITY:
+=========
+
+✓ GitHub token stored as Kubernetes Secret
+✓ Service Account has read-only cluster access
+✓ All changes go through PR review process
+✓ Branch protection recommended on main branch
+✓ Never commit tokens to git (.gitignore included)
+
+NEXT STEPS:
+===========
+
+1. ✓ Deploy and test
+2. ✓ Set up branch protection rules on GitHub
+3. ✓ Configure notifications (Slack, Discord, etc.)
+4. ✓ Set up monitoring/alerts for failed jobs
+5. ✓ Document your deployment process
+6. ✓ Enjoy automated updates!
+
+SUPPORT:
+========
+
+Issues? Check:
+- README.md - Full documentation
+- AI_FEATURES.md - AI capabilities and setup
+- USAGE.md - Detailed usage examples
+- EXAMPLES.py - Example outputs
+- Logs: kubectl logs -n image-updater job/[name]
+
+Questions?
+- Check existing GitHub Issues
+- Review the code (it's well commented!)
+- Test with --dry-run first
+
+Happy automating with AI! 🤖🚀
+"""

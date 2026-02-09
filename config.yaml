@@ -1,0 +1,78 @@
+# Configuration for K8s Image Updater Agent
+
+# GitHub Configuration
+github:
+  # GitHub token (can be set via GITHUB_TOKEN env var)
+  token: ""
+  # Repository owner
+  owner: "mtstrong"
+  # Repository name for manifests (adjust based on your needs)
+  repo: "homelab"
+  # Base branch to create PRs against
+  base_branch: "main"
+  # Branch prefix for update PRs
+  branch_prefix: "image-updates"
+
+# Kubernetes Configuration
+kubernetes:
+  # Namespace filter (empty list = all namespaces)
+  namespaces: []
+  # Manifest paths to update (relative to repo root)
+  manifest_paths:
+    - "kubernetes/"
+    - "../Manifest/"
+  # File patterns to search for deployments
+  deployment_patterns:
+    - "**/deployment.yaml"
+    - "**/*-deployment.yaml"
+
+# Registry Configuration
+registries:
+  # DockerHub (rate limited for anonymous)
+  dockerhub:
+    enabled: true
+    api_url: "https://registry.hub.docker.com/v2"
+  # GitHub Container Registry
+  ghcr:
+    enabled: true
+    api_url: "https://ghcr.io/v2"
+  # LinuxServer.io
+  lscr:
+    enabled: true
+    api_url: "https://lscr.io/v2"
+
+# Update behavior
+update_policy:
+  # Check for major version updates
+  allow_major: false
+  # Check for minor version updates
+  allow_minor: true
+  # Check for patch version updates
+  allow_patch: true
+  # Ignore certain images (regex patterns)
+  ignore_images:
+    - ".*:latest"
+    - ".*:dev"
+    - ".*:test"
+
+# AI Analysis (NEW!)
+ai:
+  # Enable AI-powered changelog analysis and risk prediction
+  enabled: true
+  # OpenAI API key (can be set via OPENAI_API_KEY env var)
+  openai_api_key: ""
+  # Model to use (gpt-4o, gpt-4o-mini, gpt-3.5-turbo)
+  model: "gpt-4o-mini"
+  # Analyze changelogs for breaking changes
+  analyze_changelogs: true
+  # Calculate deployment risk scores
+  risk_prediction: true
+
+# Reporting
+reporting:
+  # Include detailed changelog in PR description
+  detailed_changelog: true
+  # Include AI analysis in PR
+  include_ai_analysis: true
+  # Maximum number of updates per PR (0 = unlimited)
+  max_updates_per_pr: 0
