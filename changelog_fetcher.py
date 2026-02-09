@@ -8,6 +8,7 @@ import logging
 import requests
 from typing import Optional, Dict, List
 from github import Github, GithubException
+from packaging import version
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +203,6 @@ class ChangelogFetcher:
     def _extract_version(self, tag: str) -> Optional[version.Version]:
         """Extract version from tag"""
         import re
-        from packaging import version
         
         match = re.match(r'^(\d+(?:\.\d+)*)', tag)
         if match:
